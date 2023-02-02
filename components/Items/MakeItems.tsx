@@ -93,6 +93,22 @@ export function MakeItemsForm() {
     const reference = collection(db, "userData", user.uid, "items");
 
     try {
+      let price = 0;
+
+      // Get Price
+      const q = query(
+        collection(db, "userData", user.uid, "category"),
+        where("name", "==", category)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach((doc) => {
+        price = doc.data().subCategory[subCategory].makingPrice;
+
+        console.log(price);
+      });
+
       await addDoc(reference, {
         category: category,
         subCategory: subCategory,
@@ -101,6 +117,7 @@ export function MakeItemsForm() {
         date: date,
         painted: 0,
         available: true,
+        price: price,
       });
       setSuccessMessage("Item Added Successfully!!");
     } catch (error: any) {

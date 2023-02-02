@@ -12,13 +12,15 @@ export default function View() {
       <div className="card bg-primary text-primary-content shadow-2xl my-4">
         <div className="card-body">
           <h2 className="card-title">Items</h2>
-          <button className="btn">View Stock</button>
+          <Link href="/View/Stock" className="btn">
+            View Stock
+          </Link>
           <Link href="/View/items" className="btn">
             View Items
           </Link>
-          {/*  <div className="divider bg-accent h-0.5 rounded-lg"></div>
-          <button className="btn btn-outline btn-active">Painted Items</button>
-          <button className="btn  btn-outline  btn-active">View Items</button> */}
+          <Link href="/View/PaintedItems" className="btn">
+            View Painted Items
+          </Link>
         </div>
       </div>
 

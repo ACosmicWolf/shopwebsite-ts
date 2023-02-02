@@ -5,7 +5,7 @@ export default function BottomNavbar() {
   const router = useRouter();
 
   return (
-    <div className="w-screen fixed bottom-0 p-2 bg-base-100 transition-all flex justify-between items-center px-10">
+    <div className="w-screen fixed bottom-0 p-2 bg-base-100 transition-all flex justify-between items-center px-10 mt-20">
       <a
         onClick={(e) => {
           e.preventDefault();

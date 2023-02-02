@@ -40,7 +40,7 @@ export default function App({ Component, pageProps }: AppProps) {
                     <button
                       onClick={() => {
                         try {
-                          /* logout(); */
+                          logout();
                           router.push("/");
                         } catch (err: any) {
                           console.log(err.message);
