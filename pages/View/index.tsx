@@ -5,7 +5,7 @@ export default function View() {
   const router = useRouter();
 
   return (
-    <div className="p-4 overflow-y-auto">
+    <div className="p-4 overflow-y-auto mb-6">
       <p className="text-2xl text-center font-bold mb-8">View</p>
 
       {/* View Items */}

@@ -31,6 +31,7 @@ export default function ViewItems() {
           subCategory: doc.data().subCategory,
           quantity: doc.data().quantity,
           date: doc.data().date,
+          available: doc.data().quantity - doc.data().painted,
           id: doc.id,
         });
       }
@@ -63,7 +64,7 @@ export default function ViewItems() {
   };
 
   return (
-    <div>
+    <div className="mb-6">
       <h2 className="text-center font-bold text-2xl p-4">View Items</h2>
 
       <input type="checkbox" id="delete-modal" className="modal-toggle" />
@@ -126,6 +127,7 @@ export default function ViewItems() {
                 <th className="text-left">Sub-Category</th>
                 <th className="text-left">Quantity</th>
                 <th className="text-left">Date</th>
+                <th className="text-left">Available</th>
                 <th></th>
               </tr>
             </thead>
@@ -137,6 +139,7 @@ export default function ViewItems() {
                   <td>{item.subCategory}</td>
                   <td>{item.quantity}</td>
                   <td>{item.date}</td>
+                  <td>{item.available}</td>
                   <td>
                     <label
                       htmlFor="delete-modal"
@@ -155,7 +158,12 @@ export default function ViewItems() {
               <th></th>
               <td>Total Items</td>
               <td></td>
-              <td></td>
+              {/* Total items = each item's quantity */}
+              <td>
+                {items.reduce((acc, item) => {
+                  return acc + item.quantity;
+                }, 0)}
+              </td>
               <td></td>
               <td></td>
             </tfoot>
