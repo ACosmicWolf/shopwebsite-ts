@@ -121,6 +121,8 @@ export default function MonthlyReport() {
 
   const [reportData, setReportData] = useState<object[]>([]);
 
+  const [advances, setAdvances] = useState<object[]>([]);
+
   const getReportData = async () => {
     setLoading(true);
 
@@ -194,6 +196,37 @@ export default function MonthlyReport() {
       });
     }
 
+    // Get Advances of selected employee
+
+    let advanceData: object[] = [];
+
+    const advancesRef = collection(
+      db,
+      "userData",
+      user.uid,
+      "employee",
+      employeeData.id,
+      "advancePayment"
+    );
+
+    (await getDocs(advancesRef)).forEach((d) => {
+      const data = d.data();
+
+      let tempDate = new Date(data.date);
+
+      if (
+        tempDate.getFullYear() === date.getFullYear() &&
+        tempDate.getMonth() === date.getMonth()
+      ) {
+        advanceData.push({
+          amount: data.amount,
+          date: data.date,
+        });
+      }
+    });
+
+    setAdvances(advanceData);
+
     console.log(tempReportData);
     setReportData(tempReportData);
 
@@ -249,10 +282,10 @@ export default function MonthlyReport() {
       </form>
 
       {reportData.length > 0 && (
-        <div className="m-4">
+        <div className="m-4 mb-48">
           <h3 className="text-center text-xl font-bold">Report</h3>
 
-          <table className="table table-compact w-full mt-4">
+          <table className="table table-normal w-full mt-4">
             <thead>
               <tr>
                 <th>Name</th>
@@ -267,7 +300,6 @@ export default function MonthlyReport() {
             </tbody>
           </table>
 
-          <h3 className="text-center text-xl font-bold">Items</h3>
           <div className="overflow-x-auto">
             <table className="table table-normal w-full mt-4">
               <thead>
@@ -308,6 +340,38 @@ export default function MonthlyReport() {
                       (acc: any, item: any) => acc + item.price * item.quantity,
                       0
                     )}
+                  </th>
+                </tr>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th>Advance</th>
+                  <th>
+                    {advances.reduce(
+                      (acc: any, item: any) => acc + item.amount,
+                      0
+                    )}
+                  </th>
+                </tr>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th>Calculated</th>
+                  <th>
+                    {reportData.reduce(
+                      (acc: any, item: any) => acc + item.price * item.quantity,
+                      0
+                    ) -
+                      advances.reduce(
+                        (acc: any, item: any) => acc + item.amount,
+                        0
+                      )}
                   </th>
                 </tr>
               </tfoot>
