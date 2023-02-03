@@ -35,7 +35,7 @@ export default function AdvancePayment() {
     setLoading(true);
 
     const employeeName: string = employeeSelectRef.current?.value as string;
-    const quantity = quanityRef.current?.value;
+    const quantity = quanityRef.current?.value as string;
     const date = dateRef.current?.value;
 
     if (employeeName === "" || quantity === "" || date === "") {
@@ -56,7 +56,7 @@ export default function AdvancePayment() {
     );
 
     await addDoc(ref, {
-      amount: quantity,
+      amount: parseInt(quantity),
       date: date,
     });
 

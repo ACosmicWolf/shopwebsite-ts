@@ -38,10 +38,9 @@ export default function App({ Component, pageProps }: AppProps) {
                 >
                   <li>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         try {
                           logout();
-                          router.push("/");
                         } catch (err: any) {
                           console.log(err.message);
                         }
@@ -58,7 +57,9 @@ export default function App({ Component, pageProps }: AppProps) {
           <ProtectedRoute>
             <Component {...pageProps} />
           </ProtectedRoute>
-          <BottomNavbar />
+          <div className="pt-20">
+            <BottomNavbar />
+          </div>
         </div>
       )}
     </AuthContextProvider>

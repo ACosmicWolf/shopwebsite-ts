@@ -1,3 +1,4 @@
+import GenerateReport from "@/components/GenerateMonthlyReport";
 import { db } from "@/firebase";
 import { useAuth } from "@/lib/AuthContext";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
@@ -18,7 +19,15 @@ const AllMonths = [
   "December",
 ];
 
-// TODO: WTF IS THE ARRAY OF OBJECTS EMPTY AFTER ADDING STUFF TO IT
+interface PdfData {
+  date: string;
+  items: string[][];
+  total: number;
+  advances: number;
+  calculated: number;
+  employeeName: string;
+  employeeType: string;
+}
 
 export default function MonthlyReport() {
   const { user } = useAuth();
@@ -26,6 +35,22 @@ export default function MonthlyReport() {
   const [employees, setEmployees] = useState<object[]>([]);
 
   const [loading, setLoading] = useState<boolean>(false);
+
+  const [pdfData, setPdfData] = useState<PdfData>();
+
+  const handleGenerateReport = async () => {
+    if (pdfData) {
+      GenerateReport(
+        pdfData.date,
+        pdfData.items,
+        pdfData.total,
+        pdfData.advances,
+        pdfData.calculated,
+        pdfData.employeeName,
+        pdfData.employeeType
+      );
+    }
+  };
 
   const fetchMonths = async () => {
     setLoading(true);
@@ -126,12 +151,27 @@ export default function MonthlyReport() {
   const getReportData = async () => {
     setLoading(true);
 
+    setReportData([]);
+    setAdvances([]);
+    setPdfData(undefined);
+
     const date = new Date(monthRef.current?.value as string);
     const employeeData = JSON.parse(employeeRef.current?.value as string);
 
     console.log(date, employeeData);
 
     let tempReportData: object[] = [];
+
+    let pdfItems: PdfData = {
+      // DD/MM/YYYY
+      date: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+      items: [],
+      total: 0,
+      advances: 0,
+      calculated: 0,
+      employeeName: employeeData.name,
+      employeeType: employeeData.type,
+    };
 
     // get items if employee is a mistry else get paintedItems if employee is a painter
 
@@ -159,6 +199,8 @@ export default function MonthlyReport() {
               date: data.date,
               price: data.price,
             });
+
+            pdfItems.total += data.price;
           }
         });
       });
@@ -192,6 +234,8 @@ export default function MonthlyReport() {
             date: data.date,
             price: data.price,
           });
+
+          pdfItems.total += data.price;
         }
       });
     }
@@ -222,13 +266,28 @@ export default function MonthlyReport() {
           amount: data.amount,
           date: data.date,
         });
+        pdfItems.advances += data.amount;
       }
     });
 
     setAdvances(advanceData);
 
-    console.log(tempReportData);
+    tempReportData.map((item: any) => {
+      pdfItems.items.push([
+        item.category,
+        item.subcategory,
+        item.date,
+        item.price,
+        item.quantity,
+        item.quantity * item.price,
+      ]);
+    });
+
+    pdfItems.calculated = pdfItems.total - pdfItems.advances;
+
     setReportData(tempReportData);
+
+    setPdfData(pdfItems);
 
     setLoading(false);
   };
@@ -281,8 +340,23 @@ export default function MonthlyReport() {
         </button>
       </form>
 
+      {/* Generate Pdf Button */}
+
+      {pdfData && (
+        <div className="p-4">
+          <button
+            className="btn btn-outline"
+            onClick={() => {
+              handleGenerateReport();
+            }}
+          >
+            Generate PDF
+          </button>
+        </div>
+      )}
+
       {reportData.length > 0 && (
-        <div className="m-4 mb-48">
+        <div className="m-4">
           <h3 className="text-center text-xl font-bold">Report</h3>
 
           <table className="table table-normal w-full mt-4">

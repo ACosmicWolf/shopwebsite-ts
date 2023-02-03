@@ -64,7 +64,7 @@ export default function Sales() {
 
     const quantity = quanityRef.current?.value || 0;
     const date = dateRef.current?.value;
-    const price = priceRef.current?.value;
+    const price = priceRef.current?.value as string;
 
     if (quantity === "" || date === "" || price === "" || !selected) {
       setError("All fields are required");
@@ -80,7 +80,7 @@ export default function Sales() {
     await addDoc(salesRef, {
       quantity: quantity,
       date: date,
-      price: price,
+      price: parseInt(price),
       category: selectedStock.category,
       subCategory: selectedStock.subCategory,
     });

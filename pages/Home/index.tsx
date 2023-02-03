@@ -1,10 +1,93 @@
 import ItemsCard from "@/components/Items";
+import { db } from "@/firebase";
+import { useAuth } from "@/lib/AuthContext";
+import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const { user } = useAuth();
+
+  const [sales, setSales] = useState<string>();
+  const [advances, setAdvances] = useState<string>();
+
+  const fetchData = async () => {
+    const salesRef = collection(db, "userData", user.uid, "sales");
+
+    const salesSnap = await getDocs(salesRef);
+
+    let salesTotal: number = 0;
+
+    salesSnap.forEach((doc) => {
+      salesTotal += parseInt(doc.data().price);
+    });
+
+    setSales(
+      Intl.NumberFormat("en-US", {
+        notation: "compact",
+        maximumFractionDigits: 1,
+      }).format(salesTotal)
+    );
+
+    const advancesRef = collection(db, "userData", user.uid, "employee");
+
+    const advancesSnap = await getDocs(advancesRef);
+
+    let advancesTotal: number = 0;
+
+    advancesSnap.forEach(async (doc) => {
+      console.log(doc.data());
+
+      const advancePayment = collection(
+        db,
+        "userData",
+        user.uid,
+        "employee",
+        doc.id,
+        "advancePayment"
+      );
+
+      await getDocs(advancePayment)
+        .then((advancePaymentSnap) => {
+          advancePaymentSnap.forEach((doc) => {
+            advancesTotal += parseInt(doc.data().amount);
+          });
+        })
+        .then(() => {
+          setAdvances(
+            Intl.NumberFormat("en-US", {
+              notation: "compact",
+              maximumFractionDigits: 1,
+            }).format(advancesTotal)
+          );
+        });
+    });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
   return (
     <div className="p-4 mb-10">
       <p className="text-2xl text-center font-bold">Dashboard</p>
+
+      <div className="overflow-x-auto">
+        <div className="stats shadow w-full">
+          <div className="stat place-items-center">
+            <div className="stat-title">Sales</div>
+            <div className="stat-value">₹ {sales}</div>
+            <div className="stat-desc">This Month</div>
+          </div>
+
+          <div className="stat place-items-center">
+            <div className="stat-title">Advances</div>
+            <div className="stat-value">₹ {advances}</div>
+            <div className="stat-desc">This Month</div>
+          </div>
+        </div>
+      </div>
+
       <ItemsCard />
 
       <div className="card bg-accent text-accent-content mb-10">
