@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 export default function ViewSubcategory() {
   const { user } = useAuth();
   const router = useRouter();
-  const { categoryname } = router.query;
+  const { categoryname } = router.query as { categoryname: string };
 
   const [subcategory, setSubcategory] = useState<Object[]>([]);
 
@@ -29,12 +29,7 @@ export default function ViewSubcategory() {
 
     // Fetch Subcategory from firestore database
 
-    const document = query(
-      collection(db, `userData/${user.uid}/category`),
-      where("name", "==", categoryname)
-    );
-
-    const querySnapshot = await getDocs(document);
+    const document = query(collection(db, `userData/${user.uid}/category`));
 
     let subcategoryData: Object[] = [];
 
@@ -42,16 +37,20 @@ export default function ViewSubcategory() {
       [key: string]: Object;
     }
 
-    querySnapshot.forEach((doc) => {
-      for (let key in doc.data().subCategory) {
-        let value = doc.data().subCategory[key];
-        let obj: Subcategory = {
-          name: key,
-          makingPrice: value.makingPrice,
-          paintingPrice: value.paintingPrice,
-        };
-        subcategoryData.push(obj);
-      }
+    await getDocs(document).then((querySnapshot) => {
+      querySnapshot.forEach((doc: any) => {
+        if (doc.id.trim() === categoryname.trim()) {
+          for (let key in doc.data().subCategory) {
+            let value = doc.data().subCategory[key];
+            let obj: Subcategory = {
+              name: key,
+              makingPrice: value.makingPrice,
+              paintingPrice: value.paintingPrice,
+            };
+            subcategoryData.push(obj);
+          }
+        }
+      });
     });
 
     setSubcategory(subcategoryData);
