@@ -176,7 +176,7 @@ export default function ViewSubcategory() {
                   <tr>
                     <th></th>
                     <th>Total Subcategories</th>
-                    <th>1</th>
+                    <th>{subcategory.length}</th>
                     <th></th>
                     <th></th>
                   </tr>
