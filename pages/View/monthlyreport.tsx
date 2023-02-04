@@ -29,6 +29,14 @@ interface PdfData {
   employeeType: string;
 }
 
+const formatDate = (date: Date) => {
+  let day = date.getDate();
+  let month = date.getMonth() + 1;
+  let year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
 export default function MonthlyReport() {
   const { user } = useAuth();
   const [months, setMonths] = useState<object[]>([]);
@@ -276,7 +284,7 @@ export default function MonthlyReport() {
       pdfItems.items.push([
         item.category,
         item.subcategory,
-        item.date,
+        formatDate(new Date(item.date)),
         item.price,
         item.quantity,
         item.quantity * item.price,
