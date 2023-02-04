@@ -27,6 +27,16 @@ const AllMonths = [
   "December",
 ];
 
+// format date to DD MM YYYY
+
+const formatDate = (date: Date) => {
+  let day = date.getDate();
+  let month = date.getMonth() + 1;
+  let year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
 export default function ViewSales() {
   const { user } = useAuth();
 
@@ -89,12 +99,11 @@ export default function ViewSales() {
         querySnapshot.docs.map((doc) => {
           let data = doc.data();
           salesData.push({
-            date: data.date,
+            date: formatDate(new Date(data.date)),
             category: data.category,
             subcategory: data.subCategory,
             quantity: data.quantity,
             price: data.price,
-            total: data.price * data.quantity,
             id: doc.id,
           });
         });
@@ -117,12 +126,11 @@ export default function ViewSales() {
             console.log(data);
 
             salesData.push({
-              date: data.date,
+              date: formatDate(new Date(data.date)),
               category: data.category,
               subcategory: data.subCategory,
               quantity: data.quantity,
               price: data.price,
-              total: data.price * data.quantity,
               id: doc.id,
             });
           }
@@ -291,7 +299,6 @@ export default function ViewSales() {
                   <th>Subcategory</th>
                   <th>Quantity</th>
                   <th>Price</th>
-                  <th>Total</th>
                   <th></th>
                 </tr>
               </thead>
@@ -305,7 +312,6 @@ export default function ViewSales() {
                       <td>{sale.subcategory}</td>
                       <td>{sale.quantity}</td>
                       <td>{sale.price}</td>
-                      <td>{sale.total}</td>
                       <td>
                         <label
                           htmlFor="delete-modal"
@@ -325,12 +331,16 @@ export default function ViewSales() {
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td></td>
-                  <td></td>
                   <td className="font-bold">Total</td>
+                  <td>
+                    {salesTableData.reduce(
+                      (acc: any, curr: any) => acc + parseInt(curr.quantity),
+                      0
+                    )}
+                  </td>
                   <td className="font-bold text-xl">
                     {salesTableData.reduce(
-                      (acc: any, curr: any) => acc + curr.total,
+                      (acc: any, curr: any) => acc + curr.price,
                       0
                     )}
                   </td>

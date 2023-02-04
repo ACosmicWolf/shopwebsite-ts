@@ -1,3 +1,4 @@
+import GenerateStock from "@/components/GenerateStock";
 import { AnimatedSpin } from "@/components/Icons";
 import { db } from "@/firebase";
 import { useAuth } from "@/lib/AuthContext";
@@ -12,12 +13,28 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+interface StockPDF {
+  stock: string[][];
+  totalQuantity: number;
+}
+
 export default function ViewCategories() {
   const { user } = useAuth();
 
   const [stock, setStock] = useState<Object[]>([]);
 
   const [loading, setLoading] = useState<boolean>(true);
+
+  const [stockPdf, setStockPdf] = useState<StockPDF>({
+    stock: [],
+    totalQuantity: 0,
+  });
+
+  const generateStockPdf = () => {
+    if (stockPdf.stock.length > 0) {
+      GenerateStock(stockPdf.stock, stockPdf.totalQuantity);
+    }
+  };
 
   const fetchStock = async () => {
     setLoading(true);
@@ -28,6 +45,8 @@ export default function ViewCategories() {
 
     const stockData: Object[] = [];
 
+    let stockPdfData: string[][] = [];
+
     querySnapshot.forEach((doc) => {
       Object.keys(doc.data().subCategory).forEach((subCategory: any) => {
         if (doc.data().subCategory[subCategory].stock > 0) {
@@ -36,11 +55,21 @@ export default function ViewCategories() {
             subCategory: subCategory,
             stock: doc.data().subCategory[subCategory].stock,
           });
+          stockPdfData.push([
+            doc.id,
+            subCategory,
+            doc.data().subCategory[subCategory].stock,
+          ]);
         }
       });
     });
 
-    console.log(stockData);
+    setStockPdf({
+      stock: stockPdfData,
+      totalQuantity: stockData.reduce((acc: number, curr: any) => {
+        return acc + curr.stock;
+      }, 0) as number,
+    });
 
     setStock(stockData);
     setLoading(false);
@@ -65,6 +94,15 @@ export default function ViewCategories() {
           Refresh
         </button>
       </div>
+
+      {/* Generate PDF Button */}
+      {stockPdf.stock.length > 0 && (
+        <div className="flex justify-end mb-4">
+          <button onClick={generateStockPdf} className="btn btn-sm btn-primary">
+            Generate PDF
+          </button>
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         {!loading ? (

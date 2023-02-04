@@ -1,3 +1,4 @@
+import { AnimatedSpin } from "@/components/Icons";
 import ItemsCard from "@/components/Items";
 import { db } from "@/firebase";
 import { useAuth } from "@/lib/AuthContext";
@@ -76,13 +77,17 @@ export default function Home() {
         <div className="stats shadow w-full">
           <div className="stat place-items-center">
             <div className="stat-title">Sales</div>
-            <div className="stat-value">₹ {sales}</div>
+            <div className="stat-value">
+              {sales ? <p>₹ {sales}</p> : <AnimatedSpin />}
+            </div>
             <div className="stat-desc">This Month</div>
           </div>
 
           <div className="stat place-items-center">
             <div className="stat-title">Advances</div>
-            <div className="stat-value">₹ {advances}</div>
+            <div className="stat-value">
+              {advances ? <p>₹ {advances}</p> : <AnimatedSpin />}
+            </div>
             <div className="stat-desc">This Month</div>
           </div>
         </div>
