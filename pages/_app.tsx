@@ -40,7 +40,7 @@ export default function App({ Component, pageProps }: AppProps) {
                     <button
                       onClick={async () => {
                         try {
-                          logout();
+                          await logout();
                         } catch (err: any) {
                           console.log(err.message);
                         }
