@@ -106,8 +106,6 @@ export function MakeItemsForm() {
 
     const date = dateInput.current?.value;
 
-    console.log(category, subCategory, mistry, quantity, date);
-
     const reference = collection(db, "userData", user.uid, "items");
 
     try {
@@ -115,17 +113,25 @@ export function MakeItemsForm() {
 
       // Get Price
       const q = query(
-        collection(db, "userData", user.uid, "category"),
-        where("name", "==", category)
+        collection(
+          db,
+          "userData",
+          user.uid,
+          "category",
+          category,
+          "subCategory"
+        )
       );
 
-      const querySnapshot = await getDocs(q);
-
-      querySnapshot.forEach((doc) => {
-        price = doc.data().subCategory[subCategory].makingPrice;
-
-        console.log(price);
+      await getDocs(q).then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          if (doc.data().name.trim() === subCategory.trim()) {
+            price = doc.data().makingPrice;
+          }
+        });
       });
+
+      console.log(price);
 
       await addDoc(reference, {
         category: category,

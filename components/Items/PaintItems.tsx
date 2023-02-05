@@ -6,6 +6,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  increment,
   query,
   updateDoc,
   where,
@@ -100,8 +101,20 @@ export function PaintItemsForm() {
 
     const itemData = (await getDoc(itemRef)).data();
 
+    let category = "";
+
     try {
       if (itemData) {
+        await getDocs(collection(db, `userData/${user.uid}/category`)).then(
+          (querySnapshot) => {
+            querySnapshot.forEach((doc: any) => {
+              if (doc.id.trim() === itemData.category.trim()) {
+                category = doc.id;
+              }
+            });
+          }
+        );
+
         if (itemData.quantity - itemData.painted === quantity) {
           await updateDoc(itemRef, {
             available: false,
@@ -112,60 +125,80 @@ export function PaintItemsForm() {
             painted: itemData.painted + quantity,
           });
         }
-      }
 
-      const paintItemRef = collection(db, "userData", user.uid, "paintedItems");
+        const paintItemRef = collection(
+          db,
+          "userData",
+          user.uid,
+          "paintedItems"
+        );
 
-      let price = 0;
+        // Get Price
+        const q = query(
+          collection(
+            db,
+            "userData",
+            user.uid,
+            "category",
+            category,
+            "subCategory"
+          )
+        );
 
-      // Get Price
-      const q = query(
-        collection(db, "userData", user.uid, "category"),
-        where("name", "==", itemData?.category)
-      );
+        let price = 0;
 
-      const querySnapshot = await getDocs(q);
-
-      querySnapshot.forEach((doc) => {
-        price = doc.data().subCategory[itemData?.subCategory].paintingPrice;
+        await getDocs(q).then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            if (doc.data().name.trim() === itemData.subCategory.trim()) {
+              price = doc.data().paintingPrice;
+            }
+          });
+        });
 
         console.log(price);
-      });
 
-      await addDoc(paintItemRef, {
-        date: date,
-        painter: painter,
-        itemId: itemID,
-        quantity: quantity,
-        mistry: itemData?.mistry,
-        category: itemData?.category,
-        subCategory: itemData?.subCategory,
-        price: price,
-      });
+        await addDoc(paintItemRef, {
+          date: date,
+          painter: painter,
+          itemId: itemID,
+          quantity: quantity,
+          mistry: itemData?.mistry,
+          category: category,
+          subCategory: itemData?.subCategory,
+          price: price,
+        });
 
-      const categoryRef = doc(
-        db,
-        "userData",
-        user.uid,
-        "category",
-        itemData?.category
-      );
+        let subCategory = "";
 
-      const categoryData = (await getDoc(categoryRef)).data();
+        await getDocs(
+          collection(
+            db,
+            "userData",
+            user.uid,
+            "category",
+            category,
+            "subCategory"
+          )
+        ).then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            if (doc.data().name.trim() === itemData.subCategory.trim()) {
+              subCategory = doc.id;
+            }
+          });
+        });
 
-      if (categoryData) {
-        await updateDoc(categoryRef, {
-          [`subCategory.${itemData?.subCategory as string}`]: {
-            stock:
-              categoryData.subCategory[itemData?.subCategory as string].stock +
-              quantity,
-            makingPrice:
-              categoryData.subCategory[itemData?.subCategory as string]
-                .makingPrice,
-            paintingPrice:
-              categoryData.subCategory[itemData?.subCategory as string]
-                .paintingPrice,
-          },
+        const subCategoryRef = doc(
+          db,
+          "userData",
+          user.uid,
+          "category",
+          category,
+          "subCategory",
+          subCategory
+        );
+
+        await updateDoc(subCategoryRef, {
+          stock: increment(quantity),
         });
       }
     } catch (e: any) {

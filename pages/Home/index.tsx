@@ -133,6 +133,10 @@ export default function Home() {
           <Link href="/Add/advancepayment" className="btn">
             Advance Payment
           </Link>
+
+          <Link href="/View/advances" className="btn">
+            View Advances
+          </Link>
         </div>
       </div>
     </div>
