@@ -7,6 +7,7 @@ import {
   doc,
   getDocs,
   query,
+  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -70,12 +71,15 @@ export default function ViewSubcategory() {
     try {
       // Delete Subcategory from firestore database
 
-      const document = updateDoc(
-        doc(db, `userData/${user.uid}/category/${categoryname}`),
-        {
-          [`subCategory.${subcategory}`]: deleteField(),
-        }
-      );
+      const docRef = doc(db, "userData", user.uid, "category", categoryname);
+      const data = { [`subCategory.${subcategory}`]: deleteField() };
+      updateDoc(docRef, data)
+        .then(() => {
+          console.log("Code Field has been deleted successfully");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     } catch (error) {
       console.log(error);
     }
