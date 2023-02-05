@@ -3,6 +3,7 @@ import { db } from "@/firebase";
 import { useAuth } from "@/lib/AuthContext";
 import {
   collection,
+  deleteDoc,
   deleteField,
   doc,
   getDoc,
@@ -20,56 +21,28 @@ export default function ViewSubcategory() {
   const router = useRouter();
   const { categoryname } = router.query as { categoryname: string };
 
+  const [category, setCategory] = useState<string>("");
+
   const [subcategory, setSubcategory] = useState<Object[]>([]);
 
   const [loading, setLoading] = useState<boolean>(true);
 
   const [subcategoryToDelete, setSubcategoryToDelete] = useState<string>("");
 
-  const fetchSubcategory = async () => {
-    setLoading(true);
-
-    // Fetch Subcategory from firestore database
-
-    const document = query(collection(db, `userData/${user.uid}/category`));
-
-    let subcategoryData: Object[] = [];
-
-    interface Subcategory {
-      [key: string]: Object;
-    }
-
-    await getDocs(document).then((querySnapshot) => {
-      querySnapshot.forEach((doc: any) => {
-        if (doc.id.trim() === categoryname.trim()) {
-          for (let key in doc.data().subCategory) {
-            let value = doc.data().subCategory[key];
-            let obj: Subcategory = {
-              name: key,
-              makingPrice: value.makingPrice,
-              paintingPrice: value.paintingPrice,
-            };
-            subcategoryData.push(obj);
+  const correctCategoryName = async () => {
+    await getDocs(collection(db, `userData/${user.uid}/category`)).then(
+      (querySnapshot) => {
+        querySnapshot.forEach((doc: any) => {
+          if (doc.id.trim() === categoryname.trim()) {
+            setCategory(doc.id);
           }
-        }
-      });
-    });
-
-    setSubcategory(subcategoryData);
-
-    setLoading(false);
+        });
+      }
+    );
   };
 
-  useEffect(() => {
-    fetchSubcategory();
-  }, []);
-
-  const handleDeleteSubCategory = async (subcategory: string) => {
+  const fetchSubcategory = async () => {
     setLoading(true);
-
-    console.log(subcategory);
-
-    console.log(categoryname);
 
     let category = "";
 
@@ -83,25 +56,63 @@ export default function ViewSubcategory() {
       }
     );
 
+    // Fetch Subcategory from firestore database
+
+    if (category !== "") {
+      let subcategoryData: Object[] = [];
+
+      const ref = collection(
+        db,
+        "userData",
+        user.uid,
+        "category",
+        category,
+        "subCategory"
+      );
+
+      await getDocs(ref).then((querySnapshot) => {
+        querySnapshot.forEach((doc: any) => {
+          let obj = {
+            name: doc.data().name,
+            makingPrice: doc.data().makingPrice,
+            paintingPrice: doc.data().paintingPrice,
+            id: doc.id,
+          };
+          subcategoryData.push(obj);
+        });
+      });
+
+      setSubcategory(subcategoryData);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    correctCategoryName();
+    fetchSubcategory();
+  }, []);
+
+  const handleDeleteSubCategory = async (subcategory: string) => {
+    setLoading(true);
+
+    console.log(subcategory);
+
+    console.log(categoryname);
+
     // Delete Subcategory from firestore database
 
-    const docRef = doc(db, "userData", user.uid, "category", category);
-    await getDoc(docRef).then(async (doc) => {
-      if (doc.exists()) {
-        let subCategory = doc.data().subCategory;
-        delete subCategory[subcategory];
+    const docRef = doc(
+      db,
+      "userData",
+      user.uid,
+      "category",
+      category,
+      "subCategory",
+      subcategory
+    );
 
-        await updateDoc(docRef, {
-          subCategory: subCategory,
-        })
-          .then(() => {
-            console.log("Code Field has been deleted successfully");
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
-    });
+    await deleteDoc(docRef);
 
     await fetchSubcategory();
     setLoading(false);
@@ -184,7 +195,7 @@ export default function ViewSubcategory() {
                       <td>
                         <label
                           onClick={() => {
-                            setSubcategoryToDelete(elem.name);
+                            setSubcategoryToDelete(elem.id);
                           }}
                           className="btn btn-sm btn-error"
                           htmlFor="delete-modal"

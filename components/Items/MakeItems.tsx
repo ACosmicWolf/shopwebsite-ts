@@ -63,16 +63,34 @@ export function MakeItemsForm() {
   const fetchSubcategories = async () => {
     let category: string = categorySelect.current?.value as string;
 
-    await getDoc(doc(db, "userData", user.uid, "category", category)).then(
-      (doc) => {
-        console.log(doc.data());
-        if (doc.exists()) {
-          setSubCategories(Object.keys(doc.data().subCategory));
-        } else {
-          console.log("No such document!");
-        }
+    await getDocs(collection(db, `userData/${user.uid}/category`)).then(
+      (querySnapshot) => {
+        querySnapshot.forEach((doc: any) => {
+          if (doc.id.trim() === category.trim()) {
+            category = doc.id;
+          }
+        });
       }
     );
+
+    let subCategoryData: string[] = [];
+
+    const ref = collection(
+      db,
+      "userData",
+      user.uid,
+      "category",
+      category,
+      "subCategory"
+    );
+
+    await getDocs(ref).then((querySnapshot) => {
+      querySnapshot.forEach((doc: any) => {
+        subCategoryData.push(doc.data().name);
+      });
+    });
+
+    setSubCategories(subCategoryData);
   };
 
   useEffect(() => {

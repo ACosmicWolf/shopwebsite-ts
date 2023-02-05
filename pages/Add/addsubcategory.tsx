@@ -51,7 +51,7 @@ export default function AddCategory() {
 
           // Add Sub-Category to collection
           try {
-            await setDoc(
+            /* await setDoc(
               doc(db, "userData", user.uid, "category", category),
               {
                 subCategory: {
@@ -64,7 +64,24 @@ export default function AddCategory() {
                 },
               },
               { merge: true }
+            ); */
+            await addDoc(
+              collection(
+                db,
+                "userData",
+                user.uid,
+                "category",
+                category,
+                "subCategory"
+              ),
+              {
+                name: subCategoryName,
+                makingPrice: makingPrice,
+                paintingPrice: paintingPrice,
+                stock: 0,
+              }
             );
+
             setSuccessMessage("Sub-Category Added Successfully");
             console.info("=> 👌 Sub-Category Added Successfully");
           } catch (error: any) {
