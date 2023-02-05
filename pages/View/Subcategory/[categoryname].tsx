@@ -5,6 +5,7 @@ import {
   collection,
   deleteField,
   doc,
+  getDoc,
   getDocs,
   query,
   setDoc,
@@ -68,21 +69,39 @@ export default function ViewSubcategory() {
 
     console.log(subcategory);
 
-    try {
-      // Delete Subcategory from firestore database
+    console.log(categoryname);
 
-      const docRef = doc(db, "userData", user.uid, "category", categoryname);
-      const data = { [`subCategory.${subcategory}`]: deleteField() };
-      updateDoc(docRef, data)
-        .then(() => {
-          console.log("Code Field has been deleted successfully");
-        })
-        .catch((error) => {
-          console.log(error);
+    let category = "";
+
+    await getDocs(collection(db, `userData/${user.uid}/category`)).then(
+      (querySnapshot) => {
+        querySnapshot.forEach((doc: any) => {
+          if (doc.id.trim() === categoryname.trim()) {
+            category = doc.id;
+          }
         });
-    } catch (error) {
-      console.log(error);
-    }
+      }
+    );
+
+    // Delete Subcategory from firestore database
+
+    const docRef = doc(db, "userData", user.uid, "category", category);
+    await getDoc(docRef).then(async (doc) => {
+      if (doc.exists()) {
+        let subCategory = doc.data().subCategory;
+        delete subCategory[subcategory];
+
+        await updateDoc(docRef, {
+          subCategory: subCategory,
+        })
+          .then(() => {
+            console.log("Code Field has been deleted successfully");
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    });
 
     await fetchSubcategory();
     setLoading(false);
