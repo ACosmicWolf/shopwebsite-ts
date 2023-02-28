@@ -168,8 +168,6 @@ export function PaintItemsForm() {
           price: price,
         });
 
-        let subCategory = "";
-
         await getDocs(
           collection(
             db,
@@ -179,27 +177,29 @@ export function PaintItemsForm() {
             category,
             "subCategory"
           )
-        ).then((querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-            if (doc.data().name.trim() === itemData.subCategory.trim()) {
-              subCategory = doc.id;
-            }
-          });
-        });
+        )
+          .then((querySnapshot) => {
+            querySnapshot.forEach(async (document) => {
+              if (document.data().name.trim() === itemData.subCategory.trim()) {
+                const subCategoryRef = doc(
+                  db,
+                  "userData",
+                  user.uid,
+                  "category",
+                  category,
+                  "subCategory",
+                  document.id
+                );
 
-        const subCategoryRef = doc(
-          db,
-          "userData",
-          user.uid,
-          "category",
-          category,
-          "subCategory",
-          subCategory
-        );
+                await updateDoc(subCategoryRef, {
+                  stock: increment(quantity),
+                });
 
-        await updateDoc(subCategoryRef, {
-          stock: increment(quantity),
-        });
+                console.log("Updated Stock");
+              }
+            });
+          })
+          .then(async () => {});
       }
     } catch (e: any) {
       setError(e.message);

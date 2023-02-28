@@ -47,31 +47,49 @@ export default function ViewCategories() {
 
     let stockPdfData: string[][] = [];
 
-    querySnapshot.forEach((doc) => {
-      Object.keys(doc.data().subCategory).forEach((subCategory: any) => {
-        if (doc.data().subCategory[subCategory].stock > 0) {
-          stockData.push({
-            category: doc.id,
-            subCategory: subCategory,
-            stock: doc.data().subCategory[subCategory].stock,
+    querySnapshot.forEach(async (doc) => {
+      const subcategoryQuerySnapshot = collection(
+        db,
+        "userData",
+        user.uid,
+        "category",
+        doc.id,
+        "subCategory"
+      );
+
+      let totalStock = 0;
+      await getDocs(subcategoryQuerySnapshot)
+        .then((subCategoryDocs) => {
+          subCategoryDocs.forEach((subCategoryDoc) => {
+            totalStock += subCategoryDoc.data().stock;
+
+            stockData.push({
+              category: doc.data().name,
+              subCategory: subCategoryDoc.data().name,
+              stock: subCategoryDoc.data().stock,
+            });
+
+            stockPdfData.push([
+              doc.data().name,
+              subCategoryDoc.data().name,
+              subCategoryDoc.data().stock,
+            ]);
+
+            console.log(subCategoryDoc.data());
           });
-          stockPdfData.push([
-            doc.id,
-            subCategory,
-            doc.data().subCategory[subCategory].stock,
-          ]);
-        }
-      });
+        })
+        .then(() => {
+          setStockPdf({
+            stock: stockPdfData,
+            totalQuantity: totalStock,
+          });
+
+          console.log(totalStock);
+
+          setStock(stockData);
+        });
     });
 
-    setStockPdf({
-      stock: stockPdfData,
-      totalQuantity: stockData.reduce((acc: number, curr: any) => {
-        return acc + curr.stock;
-      }, 0) as number,
-    });
-
-    setStock(stockData);
     setLoading(false);
   };
 
