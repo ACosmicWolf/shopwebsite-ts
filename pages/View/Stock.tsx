@@ -79,12 +79,32 @@ export default function ViewCategories() {
           });
         })
         .then(() => {
+          stockPdfData.sort(sortFunction);
+
+          function sortFunction(a: any, b: any) {
+            if (a[1] === b[1]) {
+              return 0;
+            } else {
+              return a[1] < b[1] ? -1 : 1;
+            }
+          }
+
+          console.log(stockPdfData);
+
           setStockPdf({
             stock: stockPdfData,
             totalQuantity: totalStock,
           });
 
           console.log(totalStock);
+
+          stockData.sort((a: any, b: any) =>
+            a.subCategory > b.subCategory
+              ? 1
+              : b.subCategory > a.subCategory
+              ? -1
+              : 0
+          );
 
           setStock(stockData);
         });
