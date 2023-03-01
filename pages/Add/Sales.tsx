@@ -25,29 +25,39 @@ export default function Sales() {
   const [successMessage, setSuccessMessage] = useState<string>("");
 
   const fetchStock = async () => {
-    const ref = collection(db, "userData", user.uid, "category");
-
     let stockData: any = [];
 
-    await getDocs(ref).then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
-
-        for (let key in doc.data().subCategory) {
-          let value = doc.data().subCategory[key];
-          // Use `key` and `value`
-          if (value.stock > 0) {
-            stockData.push({
-              category: doc.id,
-              subCategory: key,
-              stock: value.stock,
+    await getDocs(collection(db, "userData", user.uid, "category")).then(
+      (categoryDocs) => {
+        categoryDocs.forEach(async (categoryDoc) => {
+          await getDocs(
+            collection(
+              db,
+              "userData",
+              user.uid,
+              "category",
+              categoryDoc.id,
+              "subCategory"
+            )
+          )
+            .then((querySnapshot) => {
+              querySnapshot.forEach((doc) => {
+                console.log(doc.data());
+                if (doc.data().stock > 0) {
+                  stockData.push({
+                    category: categoryDoc.id,
+                    subCategory: doc.data().name,
+                    stock: doc.data().stock,
+                  });
+                }
+              });
+            })
+            .then(() => {
+              setStock(stockData);
             });
-          }
-        }
-      });
-    });
-
-    setStock(stockData);
+        });
+      }
+    );
   };
 
   useEffect(() => {
