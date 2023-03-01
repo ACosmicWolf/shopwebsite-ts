@@ -198,7 +198,7 @@ export default function MonthlyReport() {
           if (
             tempDate.getFullYear() === date.getFullYear() &&
             tempDate.getMonth() === date.getMonth() &&
-            data.mistry === employeeData.id
+            String(data.mistry).trim() === String(employeeData.name).trim()
           ) {
             tempReportData.push({
               category: data.category,
@@ -231,7 +231,7 @@ export default function MonthlyReport() {
         if (
           tempDate.getFullYear() === date.getFullYear() &&
           tempDate.getMonth() === date.getMonth() &&
-          data.painter === employeeData.id
+          String(data.painter).trim() === String(employeeData.name).trim()
         ) {
           // get the price of the item from subcategory in category collection
 
