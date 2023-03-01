@@ -2,7 +2,13 @@ import { AnimatedSpin } from "@/components/Icons";
 import ItemsCard from "@/components/Items";
 import { db } from "@/firebase";
 import { useAuth } from "@/lib/AuthContext";
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -65,7 +71,55 @@ export default function Home() {
     });
   };
 
+  const fixPrice = async () => {
+    await getDocs(collection(db, "userData", user.uid, "items")).then(
+      (querySnapshot) => {
+        querySnapshot.forEach(async (d) => {
+          let price = 0;
+
+          await getDocs(collection(db, "userData", user.uid, "category")).then(
+            (document1) => {
+              document1.forEach(async (document) => {
+                console.log(document.data().name.trim());
+                if (document.data().name.trim() === d.data().category.trim()) {
+                  await getDocs(
+                    collection(
+                      db,
+                      "userData",
+                      user.uid,
+                      "category",
+                      document.id,
+                      "subCategory"
+                    )
+                  ).then((subCategory) => {
+                    subCategory.forEach(async (subcategory) => {
+                      if (
+                        subcategory.data().name.trim() ===
+                        d.data().subCategory.trim()
+                      ) {
+                        price = subcategory.data().makingPrice;
+
+                        await updateDoc(
+                          doc(db, "userData", user.uid, "items", d.id),
+                          {
+                            price: price,
+                          }
+                        );
+                      }
+                    });
+                  });
+                }
+              });
+            }
+          );
+        });
+      }
+    );
+  };
+
   useEffect(() => {
+    fixPrice();
+
     fetchData();
   }, []);
 

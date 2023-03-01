@@ -123,27 +123,27 @@ export function MakeItemsForm() {
         )
       );
 
-      await getDocs(q).then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          if (doc.data().name.trim() === subCategory.trim()) {
-            price = doc.data().makingPrice;
-          }
+      await getDocs(q)
+        .then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            if (doc.data().name.trim() === subCategory.trim()) {
+              price = doc.data().makingPrice;
+            }
+          });
+        })
+        .then(async () => {
+          await addDoc(reference, {
+            category: category,
+            subCategory: subCategory,
+            mistry: mistry,
+            quantity: quantity,
+            date: date,
+            painted: 0,
+            available: true,
+            price: price,
+          });
+          setSuccessMessage("Item Added Successfully!!");
         });
-      });
-
-      console.log(price);
-
-      await addDoc(reference, {
-        category: category,
-        subCategory: subCategory,
-        mistry: mistry,
-        quantity: quantity,
-        date: date,
-        painted: 0,
-        available: true,
-        price: price,
-      });
-      setSuccessMessage("Item Added Successfully!!");
     } catch (error: any) {
       console.log(error);
       setError(error.message);
