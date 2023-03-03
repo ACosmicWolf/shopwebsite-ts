@@ -155,22 +155,23 @@ export default function ViewSales() {
         if (d.exists()) {
           let data = d.data();
 
-          const categoryRef = doc(
+          const categoryRef = collection(
             db,
             "userData",
             user.uid,
             "category",
-            data.category
+            data.category,
+            "subCategory"
           );
 
-          await getDoc(categoryRef).then(async (doc) => {
-            if (doc.exists()) {
-              await updateDoc(categoryRef, {
-                [`subCategory.${data.subCategory}.stock`]: increment(
-                  data.quantity
-                ),
-              });
-            }
+          await getDocs(categoryRef).then(async (document1) => {
+            document1.forEach(async (document) => {
+              if (document.data().name === data.subCategory) {
+                await updateDoc(document.ref, {
+                  stock: increment(data.quantity),
+                });
+              }
+            });
           });
 
           await deleteDoc(ref).then(() => {

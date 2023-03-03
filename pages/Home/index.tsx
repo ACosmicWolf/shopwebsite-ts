@@ -29,12 +29,7 @@ export default function Home() {
       salesTotal += parseInt(doc.data().price);
     });
 
-    setSales(
-      Intl.NumberFormat("en-US", {
-        notation: "compact",
-        maximumFractionDigits: 1,
-      }).format(salesTotal)
-    );
+    setSales(String(salesTotal));
 
     const advancesRef = collection(db, "userData", user.uid, "employee");
 
@@ -61,12 +56,7 @@ export default function Home() {
           });
         })
         .then(() => {
-          setAdvances(
-            Intl.NumberFormat("en-US", {
-              notation: "compact",
-              maximumFractionDigits: 1,
-            }).format(advancesTotal)
-          );
+          setAdvances(String(advancesTotal));
         });
     });
   };
@@ -118,9 +108,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fixPrice();
-
     fetchData();
+    fixPrice();
   }, []);
 
   return (

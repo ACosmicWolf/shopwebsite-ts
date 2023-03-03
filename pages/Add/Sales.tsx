@@ -7,6 +7,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  increment,
   updateDoc,
 } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
@@ -97,24 +98,24 @@ export default function Sales() {
 
     // Update Stock
 
-    const ref = doc(
+    const ref = collection(
       db,
       "userData",
       user.uid,
       "category",
-      selectedStock.category
+      selectedStock.category,
+      "subCategory"
     );
 
-    const docSnap = await getDoc(ref);
+    const docSnap = await getDocs(ref);
 
-    if (docSnap.exists()) {
-      await updateDoc(ref, {
-        [`subCategory.${selectedStock.subCategory}.stock`]:
-          selectedStock.stock - Number(quantity),
-      });
-      setMax(selectedStock.stock - Number(quantity));
-      quanityRef.current!.max = String(selectedStock.stock - Number(quantity));
-    }
+    docSnap.forEach(async (doc) => {
+      if (doc.data().name.trim() === selectedStock.subCategory.trim()) {
+        await updateDoc(doc.ref, {
+          stock: increment(-Number(quantity)),
+        });
+      }
+    });
 
     // empty the fields
     quanityRef.current!.value = "";
