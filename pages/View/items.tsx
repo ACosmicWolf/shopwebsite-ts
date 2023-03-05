@@ -171,8 +171,15 @@ export default function ViewItems() {
               </td>
               <td></td>
               <td></td>
-              <td></td>
-              <td></td>
+              <td>Total Available Items</td>
+              <td className="text-xl text-primary">
+                {
+                  // Total available items = each item's available quantity
+                  items.reduce((acc, item) => {
+                    return acc + item.available;
+                  }, 0)
+                }
+              </td>
               <td></td>
             </tfoot>
           </table>
