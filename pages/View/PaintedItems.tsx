@@ -8,6 +8,8 @@ import {
   getDoc,
   getDocs,
   increment,
+  orderBy,
+  query,
   updateDoc,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -27,7 +29,12 @@ export default function ViewItems() {
     let items: Object[] = [];
 
     (
-      await getDocs(collection(db, "userData", user.uid, "paintedItems"))
+      await getDocs(
+        query(
+          collection(db, "userData", user.uid, "paintedItems"),
+          orderBy("date", "desc")
+        )
+      )
     ).forEach((doc) => {
       let date = new Date(doc.data().date);
       items.push({
