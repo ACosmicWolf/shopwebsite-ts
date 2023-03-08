@@ -7,6 +7,8 @@ import {
   doc,
   getDoc,
   getDocs,
+  orderBy,
+  query,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
@@ -24,22 +26,25 @@ export default function ViewItems() {
 
     let items: Object[] = [];
 
-    (await getDocs(collection(db, "userData", user.uid, "items"))).forEach(
-      (doc) => {
-        let date = new Date(doc.data().date);
-        items.push({
-          category: doc.data().category,
-          subCategory: doc.data().subCategory,
-          quantity: doc.data().quantity,
-          date: `${date.getDate()}/${
-            date.getMonth() + 1
-          }/${date.getFullYear()}`,
-          available: doc.data().quantity - doc.data().painted,
-          mistry: doc.data().mistry,
-          id: doc.id,
-        });
-      }
-    );
+    (
+      await getDocs(
+        query(
+          collection(db, "userData", user.uid, "items"),
+          orderBy("date", "desc")
+        )
+      )
+    ).forEach((doc) => {
+      let date = new Date(doc.data().date);
+      items.push({
+        category: doc.data().category,
+        subCategory: doc.data().subCategory,
+        quantity: doc.data().quantity,
+        date: `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`,
+        available: doc.data().quantity - doc.data().painted,
+        mistry: doc.data().mistry,
+        id: doc.id,
+      });
+    });
 
     setItems(items);
 
