@@ -8,6 +8,8 @@ import {
   getDoc,
   getDocs,
   increment,
+  orderBy,
+  query,
   updateDoc,
 } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
@@ -95,36 +97,10 @@ export default function ViewSales() {
 
     if (selectedMonth === "All") {
       // Fetch all sales
-      await getDocs(ref).then((querySnapshot) => {
-        querySnapshot.docs.map((doc) => {
-          let data = doc.data();
-          salesData.push({
-            date: formatDate(new Date(data.date)),
-            category: data.category,
-            subcategory: data.subCategory,
-            quantity: data.quantity,
-            price: data.price,
-            id: doc.id,
-          });
-        });
-      });
-    } else {
-      // Fetch sales of selected month
-
-      let date = new Date(selectedMonth);
-
-      await getDocs(ref).then((querySnapshot) => {
-        querySnapshot.docs.map((doc) => {
-          let data = doc.data();
-
-          let docDate = new Date(data.date);
-
-          if (
-            docDate.getMonth() === date.getMonth() &&
-            docDate.getFullYear() === date.getFullYear()
-          ) {
-            console.log(data);
-
+      await getDocs(query(ref, orderBy("date", "desc"))).then(
+        (querySnapshot) => {
+          querySnapshot.docs.map((doc) => {
+            let data = doc.data();
             salesData.push({
               date: formatDate(new Date(data.date)),
               category: data.category,
@@ -133,9 +109,39 @@ export default function ViewSales() {
               price: data.price,
               id: doc.id,
             });
-          }
-        });
-      });
+          });
+        }
+      );
+    } else {
+      // Fetch sales of selected month
+
+      let date = new Date(selectedMonth);
+
+      await getDocs(query(ref, orderBy("date", "desc"))).then(
+        (querySnapshot) => {
+          querySnapshot.docs.map((doc) => {
+            let data = doc.data();
+
+            let docDate = new Date(data.date);
+
+            if (
+              docDate.getMonth() === date.getMonth() &&
+              docDate.getFullYear() === date.getFullYear()
+            ) {
+              console.log(data);
+
+              salesData.push({
+                date: formatDate(new Date(data.date)),
+                category: data.category,
+                subcategory: data.subCategory,
+                quantity: data.quantity,
+                price: data.price,
+                id: doc.id,
+              });
+            }
+          });
+        }
+      );
     }
 
     setSalesTableData(salesData);
