@@ -1,7 +1,14 @@
 import GenerateReport from "@/components/GenerateMonthlyReport";
 import { db } from "@/firebase";
 import { useAuth } from "@/lib/AuthContext";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 
 const AllMonths = [
@@ -185,7 +192,10 @@ export default function MonthlyReport() {
 
     if (employeeData.type === "Mistry") {
       console.log("=> mistry");
-      const itemsRef = collection(db, "userData", user.uid, "items");
+      const itemsRef = query(
+        collection(db, "userData", user.uid, "items"),
+        orderBy("date", "desc")
+      );
 
       // Get all the items made by the employee in the selected month
 
@@ -214,11 +224,9 @@ export default function MonthlyReport() {
       });
     } else {
       console.log("=> painter");
-      const paintedItemsRef = collection(
-        db,
-        "userData",
-        user.uid,
-        "paintedItems"
+      const paintedItemsRef = query(
+        collection(db, "userData", user.uid, "paintedItems"),
+        orderBy("date", "desc")
       );
 
       // Get all the items painted by the employee in the selected month
