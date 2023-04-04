@@ -26,7 +26,18 @@ export default function Home() {
     let salesTotal: number = 0;
 
     salesSnap.forEach((doc) => {
-      salesTotal += parseInt(doc.data().price);
+      // Convert string date to date object and get only the current month
+
+      const date = new Date(doc.data().date);
+      const month = date.getMonth() + 1;
+      const year = date.getFullYear();
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentYear = currentDate.getFullYear();
+
+      if (month === currentMonth && year === currentYear) {
+        salesTotal += parseInt(doc.data().price);
+      }
     });
 
     setSales(String(salesTotal));
@@ -52,7 +63,18 @@ export default function Home() {
       await getDocs(advancePayment)
         .then((advancePaymentSnap) => {
           advancePaymentSnap.forEach((doc) => {
-            advancesTotal += parseInt(doc.data().amount);
+            // Convert string date to date object and get only the current month
+
+            const date = new Date(doc.data().date);
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth() + 1;
+            const currentYear = currentDate.getFullYear();
+
+            if (month === currentMonth && year === currentYear) {
+              advancesTotal += parseInt(doc.data().amount);
+            }
           });
         })
         .then(() => {
